@@ -1,0 +1,133 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block after_field_sets %}
+    {{ block.super }}
+    
+    {% if choice_data %}
+        <h2>投票结果图表</h2>
+        <div style="display: flex; justify-content: center;">
+            <canvas id="voteChart" width="600" height="400"></canvas>
+        </div>
+        
+        <script>
+            window.onload = function() {
+                const canvas = document.getElementById('voteChart');
+                const ctx = canvas.getContext('2d');
+                
+                const labels = [
+                    {% for choice in choice_data %}
+                        "{{ choice.0 }}"{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ];
+                
+                const data = [
+                    {% for choice in choice_data %}
+                        {{ choice.1 }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ];
+
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const padding = 40;
+                const chartWidth = canvasWidth - padding * 2;
+                const chartHeight = canvasHeight - padding * 2;
+                
+                const maxValue = Math.max(...data, 1);
+                
+                const barWidth = chartWidth / labels.length * 0.8;
+                const barSpacing = chartWidth / labels.length * 0.2;
+                
+                data.forEach((value, index) => {
+                    const barHeight = (value / maxValue) * chartHeight;
+                    const x = padding + index * (barWidth + barSpacing);
+                    const y = canvasHeight - padding - barHeight;
+                    
+                    ctx.fillStyle = 'rgba(75, 192, 192, 0.6)';
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                    
+                    ctx.strokeStyle = 'rgba(75, 192, 192, 1)';
+                    ctx.strokeRect(x, y, barWidth, barHeight);
+                    
+                    ctx.fillStyle = 'black';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(labels[index], x + barWidth / 2, canvasHeight - padding + 15);
+                    
+                    ctx.fillText(value, x + barWidth / 2, y - 5);
+                });
+                
+                ctx.fillStyle = 'black';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('投票结果', canvasWidth / 2, padding / 2);
+            };
+        </script>
+    {% endif %}
+    
+    {% if reasons_by_choice %}
+        <h2>投票理由</h2>
+        <div style="margin: 20px 0;">
+            {% for choice, reasons in reasons_by_choice.items %}
+                <div style="margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px;">
+                    <div style="padding: 10px; background-color: #f2f2f2; cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleReasons('reasons-{{ choice.id }}')">
+                        <strong>{{ choice.choice_text }}</strong>
+                        <span id="toggle-icon-{{ choice.id }}">▼</span>
+                    </div>
+                    <div id="reasons-{{ choice.id }}" style="padding: 10px; display: none;">
+                        {% if reasons|length > 0 %}
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #f9f9f9;">
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">理由</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">创建时间</th>
+                                        <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for reason in reasons %}
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid #ddd;">{{ reason.reason }}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd;">{{ reason.created_at }}</td>
+                                            <td style="padding: 8px; border: 1px solid #ddd;">
+                                                <form action="{% url 'admin:polls_question_change' object_id %}" method="post" style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="reason_id" value="{{ reason.id }}">
+                                                    <input type="submit" name="delete_reason" value="删除" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; cursor: pointer;">
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>暂无投票理由</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <script>
+            function toggleReasons(id) {
+                const element = document.getElementById(id);
+                const icon = document.getElementById(id.replace('reasons', 'toggle-icon'));
+                if (element.style.display === 'none') {
+                    element.style.display = 'block';
+                    icon.textContent = '▲';
+                } else {
+                    element.style.display = 'none';
+                    icon.textContent = '▼';
+                }
+            }
+            
+            document.addEventListener('DOMContentLoaded', function() {
+                const firstToggle = document.querySelector('[id^="toggle-icon-"]');
+                if (firstToggle) {
+                    const firstId = firstToggle.id.replace('toggle-icon-', 'reasons-');
+                    toggleReasons(firstId);
+                }
+            });
+        </script>
+    {% endif %}
+{% endblock %}
