@@ -30,3 +30,12 @@ class Choice(models.Model):
     def __str__(self):
         return self.choice_text
 
+
+class VoteReason(models.Model):
+    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    reason = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reason for {self.choice.choice_text}"
+

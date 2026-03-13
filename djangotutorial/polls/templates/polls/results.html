@@ -1,18 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>投票结果 - {{ question.question_text }}</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
 </head>
 <body>
-    <h1>{{ question.question_text }}</h1>
+    <div class="result-container">
+        <h1>{{ question.question_text }}</h1>
 
-    <ul>
-    {% for choice in question.choice_set.all %}
-        <li>{{ choice.choice_text }} -- {{ choice.votes }} vote{{ choice.votes|pluralize }}</li>
-    {% endfor %}
-    </ul>
+        <ul class="result-list">
+        {% for choice in question.choice_set.all %}
+            <li>
+                <span>{{ choice.choice_text }}</span>
+                <span>{{ choice.votes }} vote{{ choice.votes|pluralize }}</span>
+            </li>
+        {% endfor %}
+        </ul>
 
-    <a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+        <h2>投票结果图表</h2>
+        <canvas id="voteChart" width="600" height="400"></canvas>
+
+        <a href="{% url 'polls:detail' question.id %}" class="vote-again-btn">再次投票？</a>
+    </div>
+
+    <script>
+        // 简单的柱状图实现，不依赖外部库
+        window.onload = function() {
+            const canvas = document.getElementById('voteChart');
+            const ctx = canvas.getContext('2d');
+            
+            // 准备图表数据
+            const labels = [
+                {% for choice in question.choice_set.all %}
+                    "{{ choice.choice_text }}"{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+            
+            const data = [
+                {% for choice in question.choice_set.all %}
+                    {{ choice.votes }}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            // 计算图表参数
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const padding = 40;
+            const chartWidth = canvasWidth - padding * 2;
+            const chartHeight = canvasHeight - padding * 2;
+            
+            // 计算最大值用于缩放
+            const maxValue = Math.max(...data, 1);
+            
+            // 绘制柱状图
+            const barWidth = chartWidth / labels.length * 0.8;
+            const barSpacing = chartWidth / labels.length * 0.2;
+            
+            data.forEach((value, index) => {
+                const barHeight = (value / maxValue) * chartHeight;
+                const x = padding + index * (barWidth + barSpacing);
+                const y = canvasHeight - padding - barHeight;
+                
+                // 绘制柱子
+                ctx.fillStyle = 'rgba(25, 118, 210, 0.6)';
+                ctx.fillRect(x, y, barWidth, barHeight);
+                
+                // 绘制边框
+                ctx.strokeStyle = 'rgba(25, 118, 210, 1)';
+                ctx.strokeRect(x, y, barWidth, barHeight);
+                
+                // 绘制标签
+                ctx.fillStyle = 'black';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(labels[index], x + barWidth / 2, canvasHeight - padding + 15);
+                
+                // 绘制数值
+                ctx.fillText(value, x + barWidth / 2, y - 5);
+            });
+            
+            // 绘制标题
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('投票结果', canvasWidth / 2, padding / 2);
+        };
+    </script>
 </body>
 </html>

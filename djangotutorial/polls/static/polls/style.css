@@ -1,7 +1,153 @@
-li a {
-    color: green;
+/* 基础样式 */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
 }
 
-body {
-    background: white url("images/background.png") no-repeat;
+/* 卡片容器 */
+.vote-container,
+.result-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+/* 标题样式 */
+.vote-container h1,
+.result-container h1 {
+    color: #1976D2;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.result-container h2 {
+    color: #333;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+/* 选项样式 */
+.choice-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.choice-item:hover {
+    background-color: #f0f7ff;
+}
+
+/* 自定义单选按钮 */
+input[type="radio"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+/* 文本框样式 */
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    margin: 15px 0;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+/* 按钮样式 */
+.submit-btn,
+.vote-again-btn {
+    background-color: #1976D2;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+.vote-again-btn {
+    text-decoration: none;
+    padding: 10px 20px;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+.submit-btn:hover,
+.vote-again-btn:hover {
+    background-color: #1565C0;
+}
+
+.submit-btn:active {
+    transform: translateY(1px);
+}
+
+/* 错误信息样式 */
+.error-message {
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+/* 结果列表 */
+.result-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.result-list li {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.result-list li:last-child {
+    border-bottom: none;
+}
+
+/* 图表样式 */
+canvas {
+    margin: 20px auto;
+    display: block;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .vote-container,
+    .result-container {
+        padding: 20px;
+        margin: 0 10px;
+    }
+    
+    input[type="radio"] {
+        transform: scale(1.1);
+    }
+    
+    canvas {
+        width: 100%;
+        height: auto;
+    }
 }

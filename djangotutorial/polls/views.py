@@ -34,10 +34,13 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = "polls/results.html"
 
+from .models import Choice, Question, VoteReason
+
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
         selected_choice = question.choice_set.get(pk=request.POST["choice"])
+        reason = request.POST.get("reason", "")
     except (KeyError, Choice.DoesNotExist):
         # Redisplay the question voting form.
         return render(
@@ -51,6 +54,11 @@ def vote(request, question_id):
     else:
         selected_choice.votes = F("votes") + 1
         selected_choice.save()
+        
+        # Save vote reason if provided
+        if reason:
+            VoteReason.objects.create(choice=selected_choice, reason=reason)
+        
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
